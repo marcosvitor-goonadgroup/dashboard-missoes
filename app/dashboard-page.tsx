@@ -12,6 +12,7 @@ import LineChartComponent from "./components/dashboard/LineChartComponent"
 import RankedBars from "./components/dashboard/RankedBars"
 import FunnelCard from "./components/dashboard/FunnelCard"
 import MissionsTable from "./components/dashboard/MissionsTable"
+import MissionCheckinsChart from "./components/dashboard/MissionCheckinsChart"
 import ValidationCard from "./components/dashboard/ValidationCard"
 import BaseCard from "./components/dashboard/BaseCard"
 import PrizesCard from "./components/dashboard/PrizesCard"
@@ -170,7 +171,6 @@ export default function Dashboard() {
             }
           />
           <MetricCard icon="berloque" label="Berloques entregues" value={formatCompact(kpis.berloques)} sub="Colecionáveis das missões" />
-          <MetricCard icon="ticket" label="Números da sorte" value={formatCompact(kpis.numerosDaSorte)} sub="Gerados para o sorteio" />
           <MetricCard
             icon="check"
             label="Nota da experiência"
@@ -192,8 +192,8 @@ export default function Dashboard() {
           <div className="note" style={{ marginTop: 14 }}>
             <Icon name="info" size={18} />
             <span>
-              Com filtro de Missão ou Dia, os números de público consideram apenas participantes que fizeram check-in nesse recorte. Prêmios e números
-              da sorte não pertencem a uma missão e seguem só o filtro de dia.
+              Com filtro de Missão ou Dia, os números de público consideram apenas participantes que fizeram check-in nesse recorte. Prêmios não pertencem a
+              uma missão e seguem só o filtro de dia.
             </span>
           </div>
         )}
@@ -240,19 +240,25 @@ export default function Dashboard() {
               <h2>O que o público está fazendo</h2>
             </div>
           </div>
-          <MissionsTable missoes={view.missoes} selecionada={filters.missaoId} />
+          <div className="grid grid-7-5">
+            <MissionCheckinsChart missoes={view.missoes} selecionada={filters.missaoId} />
+            <ValidationCard validacao={view.validacao} />
+          </div>
 
-          <div className="grid grid-7-5" style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 16 }}>
+            <MissionsTable missoes={view.missoes} selecionada={filters.missaoId} />
+          </div>
+
+          <div style={{ marginTop: 16 }}>
             <ChartCard
               eyebrow="Fluxo"
               title="Check-ins por horário"
               subtitle={filters.dia ? `Dia ${dayLabel(filters.dia)} · horário de Recife` : "Soma de todos os dias · horário de Recife"}
-              height={420}
+              height={340}
               table={{ columns: ["Hora", "Check-ins"], numeric: [1], rows: view.porHora.map((h) => [h.hora, h.total]) }}
             >
               <LineChartComponent series={[{ id: "Check-ins", color: SERIES.azul, data: view.porHora.map((h) => ({ x: h.hora, y: h.total })) }]} />
             </ChartCard>
-            <ValidationCard validacao={view.validacao} />
           </div>
         </div>
 

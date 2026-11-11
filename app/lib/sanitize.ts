@@ -20,7 +20,6 @@ import type {
   Evento,
   Missao,
   MissoesDataset,
-  NumeroDaSorte,
   Participante,
   Pesquisa,
   Resgate,
@@ -222,16 +221,6 @@ export function sanitize(raw: any): MissoesDataset {
     berloques.push({ em: b.created_at, missaoId: missaoId(null, blMissao.get(b.id)), userId })
   }
 
-  // ---------- Números da sorte (só contagem — o número em si não sai do servidor) ----------
-  const nsUser = linkMap(t("numero_da_sortes_users_permissions_user_lnk"), "numero_da_sorte_id", "user_id")
-  const numerosDaSorte: NumeroDaSorte[] = []
-  for (const n of t("numero_da_sortes")) {
-    if (!n.published_at) continue
-    const userId = nsUser.get(n.id) ?? null
-    if (isStaff(userId)) continue
-    numerosDaSorte.push({ em: n.created_at, userId })
-  }
-
   // ---------- Pesquisa de experiência ----------
   const psUser = linkMap(t("pesquisa_experiencias_users_permissions_user_lnk"), "pesquisa_experiencia_id", "user_id")
   const pesquisas: Pesquisa[] = []
@@ -264,7 +253,6 @@ export function sanitize(raw: any): MissoesDataset {
     brindes,
     resgates,
     berloques,
-    numerosDaSorte,
     pesquisas,
     contasEquipeIgnoradas: staffIds.size,
   }

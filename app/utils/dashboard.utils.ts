@@ -116,7 +116,6 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
   // Resgates não pertencem a uma missão: o filtro de missão não se aplica a eles
   const resgates = ds.resgates.filter((r) => recordOk(r.userId) && dayOk(r.em))
   const berloques = ds.berloques.filter((b) => recordOk(b.userId) && dayOk(b.em) && missaoOk(b.missaoId))
-  const numeros = ds.numerosDaSorte.filter((n) => recordOk(n.userId) && dayOk(n.em))
 
   const usuariosComMissao = new Set(
     validados.filter((c) => c.userId != null && !isEntrada(ds, c.missaoId)).map((c) => c.userId),
@@ -133,7 +132,6 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
     resgates: resgates.length,
     resgatesEntregues: resgates.filter((r) => r.entregueEm || norm(r.status) === "entregue").length,
     berloques: berloques.length,
-    numerosDaSorte: numeros.length,
   }
 
   return {

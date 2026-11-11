@@ -8,6 +8,7 @@
 | `LineChartComponent` | Linhas Nivo com crosshair; legenda HTML quando há 2+ séries |
 | `RankedBars` | Barras horizontais HTML (ranking, faixas) |
 | `FunnelCard` | Funil da jornada com conversão entre etapas |
+| `MissionCheckinsChart` | Barras horizontais de check-ins por missão (empilhadas por status) |
 | `MissionsTable` | Tabela por missão com barra de status e ordenação |
 | `ValidationCard` | Check-ins por método de validação + recusas da IA |
 | `BaseCard` | Clientes × não clientes (barra segmentada) |

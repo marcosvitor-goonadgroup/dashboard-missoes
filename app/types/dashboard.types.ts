@@ -88,11 +88,6 @@ export interface BerloqueEntrega {
   userId: number | null
 }
 
-export interface NumeroDaSorte {
-  em: string
-  userId: number | null
-}
-
 export interface PerguntaResposta {
   pergunta: string
   resposta: string
@@ -115,7 +110,6 @@ export interface MissoesDataset {
   brindes: Brinde[]
   resgates: Resgate[]
   berloques: BerloqueEntrega[]
-  numerosDaSorte: NumeroDaSorte[]
   pesquisas: Pesquisa[]
   /** Contas de equipe (promotor, supervisor, resgate) removidas das métricas */
   contasEquipeIgnoradas: number
@@ -151,7 +145,6 @@ export interface Kpis {
   resgates: number
   resgatesEntregues: number
   berloques: number
-  numerosDaSorte: number
 }
 
 export interface FunnelStage {
