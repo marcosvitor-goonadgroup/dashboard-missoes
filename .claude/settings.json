@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null http://localhost:3123/)",
+      "Bash(break)",
+      "Bash(curl -s -D - -o /dev/null -H \"accept-encoding: gzip, deflate, br\" -w \"bytes na rede: %{size_download} · %{time_total}s\\\\n\" http://localhost:3123/api/dashboard)",
+      "Bash(curl -s --compressed http://localhost:3123/api/dashboard)",
+      "Bash(node -e 'let s=\"\";process.stdin.on\\(\"data\",d=>s+=d\\).on\\(\"end\",\\(\\)=>{const j=JSON.parse\\(s\\);console.log\\(\"JSON ok:\",\\(s.length/1024/1024\\).toFixed\\(2\\),\"MB · checkins\",j.checkins.length\\)}\\)')",
+      "Bash(curl -s -D - -o /dev/null -H \"accept-encoding: identity\" -w \"bytes: %{size_download}\\\\n\" http://localhost:3123/api/dashboard)",
+      "Bash(curl -s -D - -o /dev/null -H \"accept-encoding: gzip\" http://localhost:3123/api/dashboard)",
+      "Bash(grep -n 'className={filtro === p ? \"pill pill-b\" : \"pill pill-g\"}\\\\|className=\"pill pill-lilas\" style={{ height: 20, fontSize: 11 }}>{c.pergunta}' app/components/dashboard/CommentsCard.tsx)"
+    ]
+  }
+}

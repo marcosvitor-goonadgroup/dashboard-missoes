@@ -145,6 +145,10 @@ export interface Kpis {
   resgates: number
   resgatesEntregues: number
   berloques: number
+  /** participantes cujo total de pontos ganhos (sem descontar resgates) chegou à meta */
+  alcancaramMeta: number
+  /** participantes com saldo atual (ganhos − resgates) acima da meta */
+  saldoNaMeta: number
 }
 
 export interface FunnelStage {

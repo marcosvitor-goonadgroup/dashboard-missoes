@@ -17,6 +17,7 @@ export type IconName =
   | "grafico"
   | "info"
   | "ampulheta"
+  | "trofeu"
 
 const PATHS: Record<IconName, React.ReactNode> = {
   usuarios: (
@@ -92,6 +93,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 11v5.5M12 7.6v.3" />
+    </>
+  ),
+  trofeu: (
+    <>
+      <path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z" />
+      <path d="M7.5 6H4.5c0 3 1.2 4.5 3.3 4.8M16.5 6h3c0 3-1.2 4.5-3.3 4.8" />
+      <path d="M12 13.5V17M8.5 20.5h7M9.5 20.5c0-2 1-3.5 2.5-3.5s2.5 1.5 2.5 3.5" />
     </>
   ),
   ampulheta: (

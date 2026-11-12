@@ -28,6 +28,7 @@ import type {
 } from "../types/dashboard.types"
 import {
   FAIXAS_ETARIAS,
+  META_PONTOS,
   PERFIS_QUIZ,
   dayKey,
   dayLabel,
@@ -117,6 +118,16 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
   const resgates = ds.resgates.filter((r) => recordOk(r.userId) && dayOk(r.em))
   const berloques = ds.berloques.filter((b) => recordOk(b.userId) && dayOk(b.em) && missaoOk(b.missaoId))
 
+  // Pontos acumulados por pessoa (todas as missões; com filtro de dia, até o fim daquele dia).
+  // "Ganhos" ignoram os resgates: quem chegou à meta e já trocou por prêmio continua contando.
+  const ganhos = new Map<number, number>()
+  const saldos = new Map<number, number>()
+  for (const t of ds.transacoes) {
+    if (t.userId == null || (f.dia && dayKey(t.em) > f.dia)) continue
+    saldos.set(t.userId, (saldos.get(t.userId) ?? 0) + t.delta)
+    if (norm(t.origem) !== "resgate") ganhos.set(t.userId, (ganhos.get(t.userId) ?? 0) + t.delta)
+  }
+
   const usuariosComMissao = new Set(
     validados.filter((c) => c.userId != null && !isEntrada(ds, c.missaoId)).map((c) => c.userId),
   )
@@ -132,6 +143,8 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
     resgates: resgates.length,
     resgatesEntregues: resgates.filter((r) => r.entregueEm || norm(r.status) === "entregue").length,
     berloques: berloques.length,
+    alcancaramMeta: audiencia.filter((p) => (ganhos.get(p.id) ?? 0) >= META_PONTOS).length,
+    saldoNaMeta: audiencia.filter((p) => (saldos.get(p.id) ?? 0) >= META_PONTOS).length,
   }
 
   return {

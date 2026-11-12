@@ -25,7 +25,7 @@ export default function CommentsCard({ comments }: { comments: Comment[] }) {
             <button
               key={p || "todas"}
               type="button"
-              className={filtro === p ? "pill pill-b" : "pill pill-g"}
+              className={`pill pill-wrap ${filtro === p ? "pill-b" : "pill-g"}`}
               style={{ border: 0, cursor: "pointer" }}
               aria-pressed={filtro === p}
               onClick={() => setFiltro(p)}
@@ -47,7 +47,7 @@ export default function CommentsCard({ comments }: { comments: Comment[] }) {
             >
               <div style={{ fontSize: 14, lineHeight: 1.5, color: "var(--text-primary)" }}>{c.comentario}</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 8, fontSize: 12, color: "var(--text-muted)" }}>
-                <span className="pill pill-lilas" style={{ height: 20, fontSize: 11 }}>{c.pergunta}</span>
+                <span className="pill pill-wrap pill-lilas" style={{ minHeight: 20, fontSize: 11 }}>{c.pergunta}</span>
                 {c.perfil && <span className="pill pill-g" style={{ height: 20, fontSize: 11 }}>{c.perfil}</span>}
                 {c.cliente != null && (
                   <span className="pill pill-g" style={{ height: 20, fontSize: 11 }}>{c.cliente ? "Cliente BB" : "Não cliente"}</span>

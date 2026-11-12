@@ -12,6 +12,9 @@ export const EVENTO = {
 /** Intervalo de atualização automática do painel (ms) */
 export const REFRESH_INTERVAL_MS = 60_000
 
+/** Meta de pontos acompanhada no card "Alcançaram 10 mil pontos" */
+export const META_PONTOS = 10_000
+
 // ------------------------------------------------------------
 // Datas no fuso do evento
 // ------------------------------------------------------------

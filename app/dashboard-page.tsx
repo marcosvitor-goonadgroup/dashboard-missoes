@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { DashboardFilters, MissoesDataset } from "./types/dashboard.types"
 import { EMPTY_FILTERS, computeDashboard, getFilterOptions } from "./utils/dashboard.utils"
-import { REFRESH_INTERVAL_MS, dayLabel, formatCompact, formatDecimal, formatInt, formatPct, perfilLabel, plural } from "./lib/missoes"
+import { META_PONTOS, REFRESH_INTERVAL_MS, dayLabel, formatCompact, formatDecimal, formatInt, formatPct, perfilLabel, plural } from "./lib/missoes"
 import { SERIES, ordinalSteps } from "./components/dashboard/chartTheme"
 import Header from "./components/dashboard/Header"
 import MetricCard from "./components/dashboard/MetricCard"
@@ -23,6 +23,17 @@ import Icon from "./components/dashboard/Icon"
 
 const DATA_URL = "/api/dashboard"
 
+/** Baixa o dataset compactado (gzip) e descompacta no navegador; sem suporte, pede o JSON puro. */
+async function fetchDataset(): Promise<MissoesDataset> {
+  const suportaGzip = typeof DecompressionStream !== "undefined"
+  const res = await fetch(suportaGzip ? DATA_URL : `${DATA_URL}?formato=json`, { cache: "no-store" })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (res.body && res.headers.get("content-type")?.includes("application/gzip")) {
+    return new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json()
+  }
+  return res.json()
+}
+
 export default function Dashboard() {
   const [dataset, setDataset] = useState<MissoesDataset | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -36,10 +47,7 @@ export default function Dashboard() {
     carregando.current = true
     setAtualizando(true)
     try {
-      const res = await fetch(DATA_URL, { cache: "no-store" })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data: MissoesDataset = await res.json()
-      setDataset(data)
+      setDataset(await fetchDataset())
       setErro(null)
     } catch (err) {
       console.error("Dashboard:", err)
@@ -157,6 +165,17 @@ export default function Dashboard() {
             sub={
               <>
                 <strong>{formatCompact(kpis.pontosResgatados)}</strong> trocados por prêmios
+              </>
+            }
+          />
+          <MetricCard
+            icon="trofeu"
+            label={filters.dia ? `Alcançaram ${formatCompact(META_PONTOS)} pontos até ${dayLabel(filters.dia).slice(0, 5)}` : `Alcançaram ${formatCompact(META_PONTOS)} pontos`}
+            value={formatCompact(kpis.alcancaramMeta)}
+            sub={
+              <>
+                <strong>{formatPct(kpis.participantes ? (kpis.alcancaramMeta / kpis.participantes) * 100 : 0, 1)}</strong> dos participantes ·{" "}
+                <strong>{formatInt(kpis.saldoNaMeta)}</strong> com esse saldo agora
               </>
             }
           />

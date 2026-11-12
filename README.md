@@ -24,7 +24,8 @@ API Missão BB (dump das tabelas Strapi, ~840 KB, inclui dados pessoais)
         │  fetch no servidor, cache de 20 s
         ▼
 app/api/dashboard/route.ts  ──  app/lib/sanitize.ts
-        │  dataset enxuto (~20 KB), SEM dados pessoais
+        │  dataset enxuto, SEM dados pessoais, enviado em gzip
+        │  (3 MB → ~300 KB no 2º dia; o limite de resposta da Vercel é 4,5 MB)
         ▼
 navegador: app/dashboard-page.tsx
         │  computeDashboard(dataset, filtros)  ← app/utils/dashboard.utils.ts
@@ -48,6 +49,7 @@ cards e gráficos (app/components/dashboard)  · atualização automática a cad
 | Participantes | `up_users` com papel *authenticated* |
 | Missões concluídas / pendentes / recusadas | `checkins.status` |
 | Pontos distribuídos / trocados | soma de `transacoes_pontos.delta` (positivos / negativos) |
+| Alcançaram 10 mil pontos | pessoas cuja soma de `transacoes_pontos.delta`, sem os resgates, chegou a `META_PONTOS` (quem já trocou por prêmio continua contando); detalhe: quantas têm esse saldo agora |
 | Prêmios resgatados / entregues | `resgates` (+ `entregue_em`) |
 | Berloques | `berloque_entregas` |
 | Funil | Cadastro → Quiz (`perfil_quiz`) → 1ª missão além da entrada → 3+ missões → Prêmio |
