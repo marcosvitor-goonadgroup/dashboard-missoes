@@ -72,11 +72,15 @@ export interface Brinde {
   disponivel: number
 }
 
+/** entregue | reservado | cancelado — qualquer outro valor vem como está (ex.: "sem status") */
+export type StatusResgate = "entregue" | "reservado" | "cancelado" | (string & {})
+
 export interface Resgate {
   id: number
   em: string
   entregueEm: string | null
-  status: string
+  canceladoEm: string | null
+  status: StatusResgate
   pontos: number
   brindeId: number | null
   userId: number | null
@@ -140,12 +144,16 @@ export interface Kpis {
   missoesConcluidas: number
   missoesPendentes: number
   missoesRecusadas: number
+  /** pontos ganhos (missões, boosters, bônus) — estornos de resgate não contam */
   pontosDistribuidos: number
+  /** pontos trocados por prêmios, já descontados os estornos de resgates cancelados */
   pontosResgatados: number
-  resgates: number
-  resgatesEntregues: number
+  /** resgates com status "entregue" (retirados no balcão) */
+  premiosEntregues: number
+  /** resgates com status "reservado" (aguardando retirada) */
+  premiosReservados: number
   berloques: number
-  /** participantes cujo total de pontos ganhos (sem descontar resgates) chegou à meta */
+  /** participantes cujo total de pontos ganhos (sem resgates nem estornos) chegou à meta */
   alcancaramMeta: number
   /** participantes com saldo atual (ganhos − resgates) acima da meta */
   saldoNaMeta: number
@@ -224,8 +232,17 @@ export interface PremioResumo {
   altoValor: boolean
   estoqueTotal: number
   disponivel: number
-  resgatados: number
+  /** contagens por status respeitando os filtros do painel */
   entregues: number
+  reservados: number
+  cancelados: number
+  /** status desconhecidos (não deveria acontecer; aparece rotulado se surgir) */
+  outros: number
+  /** todos os registros de resgate do prêmio (= entregues + reservados + cancelados + outros) */
+  total: number
+  /** contagens sem filtro, usadas na barra de estoque (que é sempre o total do prêmio) */
+  estoqueEntregues: number
+  estoqueReservados: number
 }
 
 export interface SurveyQuestion {

@@ -48,14 +48,16 @@ cards e gráficos (app/components/dashboard)  · atualização automática a cad
 |---|---|
 | Participantes | `up_users` com papel *authenticated* |
 | Missões concluídas / pendentes / recusadas | `checkins.status` |
-| Pontos distribuídos / trocados | soma de `transacoes_pontos.delta` (positivos / negativos) |
-| Alcançaram 10 mil pontos | pessoas cuja soma de `transacoes_pontos.delta`, sem os resgates, chegou a `META_PONTOS` (quem já trocou por prêmio continua contando); detalhe: quantas têm esse saldo agora |
-| Prêmios resgatados / entregues | `resgates` (+ `entregue_em`) |
+| Pontos distribuídos | soma de `transacoes_pontos.delta` das origens de ganho (missao, booster, bonus_grupo…) — `estorno` não conta |
+| Pontos trocados por prêmios | −(transações `resgate` + `estorno`), ou seja, já descontados os resgates cancelados |
+| Alcançaram 10 mil pontos | pessoas cujos pontos ganhos (sem `resgate` nem `estorno`) chegaram a `META_PONTOS` (quem já trocou por prêmio continua contando); detalhe: quantas têm esse saldo agora |
+| Prêmios entregues | `resgates.status = "entregue"` (o status é a única fonte; reservados aparecem só como detalhe) |
+| Prêmios por status | por prêmio: Entregues · Reservados (aguardando retirada) · Cancelados (voltaram ao estoque) · Disponíveis de N. Status desconhecido aparece rotulado à parte |
 | Berloques | `berloque_entregas` |
-| Funil | Cadastro → Quiz (`perfil_quiz`) → 1ª missão além da entrada → 3+ missões → Prêmio |
+| Funil | Cadastro → Quiz (`perfil_quiz`) → 1ª missão além da entrada → 3+ missões → Prêmio (entregue ou reservado; cancelado não conta) |
 | Validação | `checkins.metodo` (QR do promotor, IA, automática) + motivos de recusa da IA |
 | Público | `perfil_quiz`, `data_usuario` (faixa etária), `tenho_conta`, `funcionario_bb` |
-| Estoque | `brindes.estoque_total` × `brindes.disponivel` |
+| Estoque | `brindes.estoque_total` × `brindes.disponivel` (estoque − disponível = entregues + reservados) |
 | Pesquisa | `pesquisa_experiencias` — respostas em texto convertidas para escala 1–5 |
 
 ### Pesquisa de experiência
@@ -75,7 +77,9 @@ Se o questionário mudar, perguntas de escala não reconhecidas aparecem em "Out
 - **Público** (faixa etária, relação com o BB, perfil do quiz): valem para todo o painel.
 - **Atividade** (missão, dia): recortam check-ins, pontos e berloques. Com eles ativos, os
   gráficos de público mostram só quem fez check-in no recorte. Prêmios
-  não pertencem a uma missão e seguem só o filtro de dia.
+  não pertencem a uma missão e seguem só o filtro de dia, cada status pela sua data
+  (entregue → `entregue_em`, cancelado → `cancelado_em`, reservado → criação). A barra de
+  estoque e os disponíveis são sempre o total do prêmio.
 
 ## Paleta dos gráficos
 

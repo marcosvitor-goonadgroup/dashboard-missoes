@@ -22,6 +22,7 @@ import type {
   Participante,
   PesquisaResumo,
   PremioResumo,
+  Resgate,
   SatisfactionBlock,
   SurveyQuestion,
   ValidacaoResumo,
@@ -114,18 +115,20 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
     : publico
 
   const transacoes = ds.transacoes.filter((t) => recordOk(t.userId) && dayOk(t.em) && missaoOk(t.missaoId))
-  // Resgates não pertencem a uma missão: o filtro de missão não se aplica a eles
-  const resgates = ds.resgates.filter((r) => recordOk(r.userId) && dayOk(r.em))
+  // Resgates não pertencem a uma missão: o filtro de missão não se aplica a eles.
+  // Com filtro de dia, cada status usa a sua data (entregue → entregue_em, cancelado → cancelado_em).
+  const resgates = ds.resgates.filter((r) => recordOk(r.userId) && dayOk(dataDoStatus(r)))
   const berloques = ds.berloques.filter((b) => recordOk(b.userId) && dayOk(b.em) && missaoOk(b.missaoId))
 
   // Pontos acumulados por pessoa (todas as missões; com filtro de dia, até o fim daquele dia).
-  // "Ganhos" ignoram os resgates: quem chegou à meta e já trocou por prêmio continua contando.
+  // "Ganhos" ignoram resgates e estornos: quem chegou à meta e já trocou por prêmio continua
+  // contando, e o estorno de um resgate cancelado não é ponto novo.
   const ganhos = new Map<number, number>()
   const saldos = new Map<number, number>()
   for (const t of ds.transacoes) {
     if (t.userId == null || (f.dia && dayKey(t.em) > f.dia)) continue
     saldos.set(t.userId, (saldos.get(t.userId) ?? 0) + t.delta)
-    if (norm(t.origem) !== "resgate") ganhos.set(t.userId, (ganhos.get(t.userId) ?? 0) + t.delta)
+    if (tipoTransacao(t.origem) === "ganho") ganhos.set(t.userId, (ganhos.get(t.userId) ?? 0) + t.delta)
   }
 
   const usuariosComMissao = new Set(
@@ -138,10 +141,14 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
     missoesConcluidas: validados.length,
     missoesPendentes: ck.filter((c) => c.status === "pendente").length,
     missoesRecusadas: ck.filter((c) => c.status === "recusado").length,
-    pontosDistribuidos: transacoes.filter((t) => t.delta > 0).reduce((s, t) => s + t.delta, 0),
-    pontosResgatados: transacoes.filter((t) => t.delta < 0).reduce((s, t) => s - t.delta, 0),
-    resgates: resgates.length,
-    resgatesEntregues: resgates.filter((r) => r.entregueEm || norm(r.status) === "entregue").length,
+    pontosDistribuidos: transacoes.filter((t) => tipoTransacao(t.origem) === "ganho").reduce((s, t) => s + t.delta, 0),
+    // resgates (negativos) + estornos (positivos) = pontos que de fato ficaram em prêmios.
+    // Como os resgates, não pertencem a uma missão: seguem só os filtros de dia e público.
+    pontosResgatados: ds.transacoes
+      .filter((t) => tipoTransacao(t.origem) !== "ganho" && recordOk(t.userId) && dayOk(t.em))
+      .reduce((s, t) => s - t.delta, 0),
+    premiosEntregues: resgates.filter((r) => r.status === "entregue").length,
+    premiosReservados: resgates.filter((r) => r.status === "reservado").length,
     berloques: berloques.length,
     alcancaramMeta: audiencia.filter((p) => (ganhos.get(p.id) ?? 0) >= META_PONTOS).length,
     saldoNaMeta: audiencia.filter((p) => (saldos.get(p.id) ?? 0) >= META_PONTOS).length,
@@ -172,6 +179,21 @@ export function computeDashboard(ds: MissoesDataset, f: DashboardFilters): Dashb
 // Partes
 // ============================================================
 
+/** missao, booster, bonus_grupo… = ganho · resgate = débito · estorno = devolução de resgate cancelado */
+function tipoTransacao(origem: string): "ganho" | "resgate" | "estorno" {
+  const o = norm(origem)
+  if (o === "resgate") return "resgate"
+  if (o.startsWith("estorno")) return "estorno"
+  return "ganho"
+}
+
+/** Data que define o dia de um resgate, conforme o status */
+function dataDoStatus(r: Resgate): string {
+  if (r.status === "entregue") return r.entregueEm ?? r.em
+  if (r.status === "cancelado") return r.canceladoEm ?? r.em
+  return r.em
+}
+
 function isEntrada(ds: MissoesDataset, missaoId: number | null): boolean {
   const m = ds.missoes.find((x) => x.id === missaoId)
   return m?.modo === "cadastro"
@@ -181,7 +203,7 @@ function computeFunil(
   ds: MissoesDataset,
   audiencia: Participante[],
   checkins: Checkin[],
-  resgates: { userId: number | null }[],
+  resgates: Resgate[],
 ): FunnelStage[] {
   const entradaIds = new Set(ds.missoes.filter((m) => m.modo === "cadastro").map((m) => m.id))
   const porUsuario = new Map<number, number>()
@@ -189,7 +211,8 @@ function computeFunil(
     if (c.status !== "validado" || c.userId == null || (c.missaoId != null && entradaIds.has(c.missaoId))) continue
     porUsuario.set(c.userId, (porUsuario.get(c.userId) ?? 0) + 1)
   }
-  const resgatou = new Set(resgates.map((r) => r.userId))
+  // Resgates cancelados não contam: a pessoa não ficou com o prêmio
+  const resgatou = new Set(resgates.filter((r) => r.status !== "cancelado").map((r) => r.userId))
   const n = (pred: (p: Participante) => boolean) => audiencia.filter(pred).length
 
   return [
@@ -197,7 +220,7 @@ function computeFunil(
     { etapa: "Quiz", descricao: "Descobriram o perfil", total: n((p) => !!p.perfilQuiz) },
     { etapa: "1ª missão", descricao: "Concluíram ao menos 1 missão além da entrada", total: n((p) => (porUsuario.get(p.id) ?? 0) >= 1) },
     { etapa: "3+ missões", descricao: "Concluíram 3 missões ou mais", total: n((p) => (porUsuario.get(p.id) ?? 0) >= 3) },
-    { etapa: "Prêmio", descricao: "Resgataram um prêmio", total: n((p) => resgatou.has(p.id)) },
+    { etapa: "Prêmio", descricao: "Prêmio entregue ou reservado", total: n((p) => resgatou.has(p.id)) },
   ]
 }
 
@@ -312,13 +335,27 @@ function computeBase(audiencia: Participante[]): BaseResumo {
   }
 }
 
-function computePremios(ds: MissoesDataset, resgates: { brindeId: number | null; entregueEm: string | null; status: string }[]): PremioResumo[] {
+/**
+ * Por prêmio: contagens por status no recorte (filtros do painel) + contagens sem filtro
+ * para a barra de estoque, que mostra sempre o estoque total do prêmio.
+ */
+function computePremios(ds: MissoesDataset, resgates: Resgate[]): PremioResumo[] {
+  const conta = (rs: Resgate[], status: string) => rs.filter((r) => r.status === status).length
   return ds.brindes.map((b) => {
     const rs = resgates.filter((r) => r.brindeId === b.id)
+    const todos = ds.resgates.filter((r) => r.brindeId === b.id)
+    const entregues = conta(rs, "entregue")
+    const reservados = conta(rs, "reservado")
+    const cancelados = conta(rs, "cancelado")
     return {
       ...b,
-      resgatados: rs.length,
-      entregues: rs.filter((r) => r.entregueEm || norm(r.status) === "entregue").length,
+      entregues,
+      reservados,
+      cancelados,
+      outros: rs.length - entregues - reservados - cancelados,
+      total: rs.length,
+      estoqueEntregues: conta(todos, "entregue"),
+      estoqueReservados: conta(todos, "reservado"),
     }
   })
 }

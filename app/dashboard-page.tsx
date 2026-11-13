@@ -181,11 +181,12 @@ export default function Dashboard() {
           />
           <MetricCard
             icon="premio"
-            label="Prêmios resgatados"
-            value={formatCompact(kpis.resgates)}
+            label="Prêmios entregues"
+            value={formatCompact(kpis.premiosEntregues)}
             sub={
               <>
-                <strong>{formatInt(kpis.resgatesEntregues)}</strong> entregues no balcão
+                Retirados no balcão · <strong>{formatInt(kpis.premiosReservados)}</strong>{" "}
+                {kpis.premiosReservados === 1 ? "reservado aguardando retirada" : "reservados aguardando retirada"}
               </>
             }
           />
@@ -212,7 +213,7 @@ export default function Dashboard() {
             <Icon name="info" size={18} />
             <span>
               Com filtro de Missão ou Dia, os números de público consideram apenas participantes que fizeram check-in nesse recorte. Prêmios não pertencem a
-              uma missão e seguem só o filtro de dia.
+              uma missão e seguem só o filtro de dia (entregues pela data de entrega).
             </span>
           </div>
         )}
@@ -330,7 +331,11 @@ export default function Dashboard() {
               <h2>Prêmios</h2>
             </div>
           </div>
-          <PrizesCard premios={view.premios} pontosResgatados={kpis.pontosResgatados} />
+          <PrizesCard
+            premios={view.premios}
+            pontosResgatados={kpis.pontosResgatados}
+            filtrado={!!(filters.dia || filters.faixaEtaria || filters.tipoCliente || filters.perfilQuiz)}
+          />
         </div>
 
         {/* ---------------- Pesquisa ---------------- */}

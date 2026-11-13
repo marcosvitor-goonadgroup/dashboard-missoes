@@ -783,6 +783,86 @@ select {
   transition: width 0.5s ease;
 }
 
+/* Prêmios */
+
+.prize-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.prize-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.prize-name strong { font-size: 16px; font-weight: 800; }
+.prize-name span:not(.pill) { font-size: 12.5px; color: var(--text-muted); }
+
+.stock-bar {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.stock-bar > div { height: 100%; }
+
+.prize-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.prize-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.6);
+  min-width: 0;
+}
+
+.prize-stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.prize-stat-value {
+  font: 800 24px/1 var(--font-titulos);
+  color: var(--noite);
+}
+
+.prize-stat-value small {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.prize-stat-caption {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 620px) {
+  .prize-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* Tabela */
 
 .table-wrap {

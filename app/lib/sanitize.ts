@@ -68,6 +68,16 @@ function normalizeStatus(s: unknown): CheckinStatus {
   return "pendente"
 }
 
+/** O campo status é a única fonte da verdade do resgate. Valores desconhecidos passam como estão. */
+function normalizeResgateStatus(s: unknown): string {
+  const v = String(s ?? "").trim().toLowerCase()
+  if (!v) return "sem status"
+  if (v.startsWith("entreg")) return "entregue"
+  if (v.startsWith("cancel")) return "cancelado"
+  if (v.startsWith("reserv")) return "reservado"
+  return v
+}
+
 export function sanitize(raw: any): MissoesDataset {
   const tables: Tables = raw?.tables ?? {}
   const t = (name: string): Row[] => tables[name]?.data ?? []
@@ -203,7 +213,8 @@ export function sanitize(raw: any): MissoesDataset {
       id: r.id,
       em: r.created_at,
       entregueEm: r.entregue_em ?? null,
-      status: String(r.status ?? "reservado"),
+      canceladoEm: r.cancelado_em ?? null,
+      status: normalizeResgateStatus(r.status),
       pontos: num(r.pontos),
       brindeId: (brin.byDoc(r.brinde_doc) ?? brin.byAnyId(rgBrinde.get(r.id)))?.id ?? null,
       userId,
